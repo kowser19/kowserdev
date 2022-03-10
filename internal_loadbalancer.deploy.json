@@ -29,29 +29,22 @@
         },
        "frontendIPConfigurationsparam" : {
             "type": "array",
-
             "defaultValue": [               
-
             ],
             "metadata": {
                 "description": " Frontend ip Configuration details"
             }
-
         },
         "backendAddressPoolsParam" : {
             "type": "array",
-
             "defaultValue": [               
-
             ],
             "metadata": {
                 "description": " Backend pools Configuration details"
             }
-
         },
          "loadBalancingRulesParam": {
              "type": "array",
-
             "defaultValue": [               
             ],
             "metadata": {
@@ -60,7 +53,6 @@
         },
         "probesParam" :{
              "type": "array",
-
             "defaultValue": [               
             ],
             "metadata": {
@@ -69,14 +61,12 @@
         },
         "inboundNatRulesParam": {
            "type": "array",
-
             "defaultValue": [             
             ],
             "metadata": {
                 "description": " LB Inbound NAT Rules"
             }
         }
-
     },
     "resources": [
         {
@@ -87,8 +77,8 @@
             "dependsOn": [                
             ],
             "sku": {
-                "name": "[parameters('sku')]"
-                
+                "name": "[parameters('sku')]",
+                "tier": "Regional"
             },
             "properties":{                                                                                   
                 "copy" :[
@@ -114,7 +104,7 @@
                         "count": "[length(parameters('backendAddressPoolsParam'))]",
                         "input": {          
                             "name": "[parameters('backendAddressPoolsParam')[copyIndex('backendAddressPools')].name]",                          
-                            "properties": "[parameters('backendAddressPoolsParam')[copyIndex('backendAddressPools')].properties]"                        
+                            "properties": {}                        
                         }                                                           
                     },
                     {
@@ -178,6 +168,20 @@
                 "outboundRules": [],
                 "inboundNatPools": []
             }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+            "apiVersion": "2020-05-01",
+            "name": "[concat(parameters('loadBalancers_Name'), '/', parameters('backendAddressPoolsParam')[copyIndex()].name)]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_Name'))]"
+            ],
+            "copy": {
+                "name": "backendAddressPoolsCopy",
+                "count": "[length(parameters('backendAddressPoolsParam'))]"
+            },
+            "properties": "[parameters('backendAddressPoolsParam')[copyIndex()].properties]"
         }
     ]   
         
