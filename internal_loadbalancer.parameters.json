@@ -1,0 +1,149 @@
+
+{  
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+            "loadBalancers_Name": {
+                "value": "lb-auea-pr-prd-devsecops-miniolb-test2"            
+            },          
+            "location": {
+                "value": "australiaeast"
+            },
+            "sku": {
+                "value": "Standard"
+            },
+            "frontendIPConfigurationsParam": {
+                "value": [
+                    {               
+                    "name": "miniofeip-test",
+                    "privateIPAddress": "10.160.32.45",
+
+                    "subnetId":  "/subscriptions/439cace9-83a4-4e09-b6ce-920ba72c70a0/resourceGroups/rg-auea-pr-prd-devsecops-lzmgt-01/providers/Microsoft.Network/virtualNetworks/vn-auea-pr-prd-devsecops-ghe-01/subnets/sn-auea-pr-prd-devsecops-ghemgt-01",
+
+                    "privateIPAddressVersion": "IPv4",
+
+                    "zones": [
+
+                            "1"
+                    ]       
+
+                    }
+                    
+                ]
+            },
+            "backendAddressPoolsParam": {
+                "value": [
+                    {
+                        "name": "miniobkippool-test",
+                        "properties": {
+                            "loadBalancerBackendAddresses": [
+                                {
+                                    "name":"393e683e-fa2c-42ff-984c-5c5e53b21613",
+                                    "properties": {
+                                        "ipAddress":"10.160.32.39",
+                                        "virtualNetwork": {
+                                            "id": "/subscriptions/439cace9-83a4-4e09-b6ce-920ba72c70a0/resourceGroups/rg-auea-pr-prd-devsecops-lzmgt-01/providers/Microsoft.Network/virtualNetworks/vn-auea-pr-prd-devsecops-ghe-01"
+                                        }
+                                    }                                       
+                                },
+                                {
+                                    "name":"2d86d5a8-e204-4f9c-9f0d-f8f603a75505",
+                                    "properties": {
+                                        "ipAddress":"10.160.32.40",
+                                        "virtualNetwork": {
+                                            "id": "/subscriptions/439cace9-83a4-4e09-b6ce-920ba72c70a0/resourceGroups/rg-auea-pr-prd-devsecops-lzmgt-01/providers/Microsoft.Network/virtualNetworks/vn-auea-pr-prd-devsecops-ghe-01"
+                                        }
+                                    }
+                                    
+                                                
+                                },
+                                {
+                                    "name":"65e0de18-3ae5-4da0-b51e-f68585ccbe47",
+                                    "properties": {
+                                        "ipAddress":"10.160.32.42",
+                                        "virtualNetwork": {
+                                            "id": "/subscriptions/439cace9-83a4-4e09-b6ce-920ba72c70a0/resourceGroups/rg-auea-pr-prd-devsecops-lzmgt-01/providers/Microsoft.Network/virtualNetworks/vn-auea-pr-prd-devsecops-ghe-01"
+                                        }
+                                    }
+                                    
+                                                
+                                },
+                                {
+                                    "name":"0172ffd5-7e3b-4b05-8801-ae670395e3b0",
+                                    "properties": {
+                                        "ipAddress":"10.160.32.43",
+                                        "virtualNetwork": {
+                                            "id": "/subscriptions/439cace9-83a4-4e09-b6ce-920ba72c70a0/resourceGroups/rg-auea-pr-prd-devsecops-lzmgt-01/providers/Microsoft.Network/virtualNetworks/vn-auea-pr-prd-devsecops-ghe-01"
+                                        }
+                                    }
+                                    
+                                                
+                                }
+                            ]
+                        }
+                    }         
+                ]
+            } ,
+            "loadBalancingRulesParam": {
+                "value": [
+                    {
+                        "frontendIPConfigurationName": "miniofeip-test",
+                        "name":"httpsProbe",
+                        "frontendPort":"443",
+                        "backendPort": "443",
+                        "backendAddressPoolName": "miniobkippool-test",
+                        "protocol": "Tcp",
+                        "propsName": "httpsProbe"
+
+                    },
+                    {
+                        "frontendIPConfigurationName": "miniofeip-test",
+                        "name": "ConsoleProb",
+                        "frontendPort": "8443",
+                        "backendPort": "8443",
+                        "backendAddressPoolName": "miniobkippool-test",
+                        "protocol": "Tcp",
+                        "propsName": "consoleprobe"
+
+                    }
+                ]
+            },
+            "probesParam": {
+                "value": [
+                {
+                    "name":"httpsProbe",
+                    "protocol":"tcp",
+                    "port":"443"
+
+                },
+                {
+                    "name":"consoleprobe",
+                    "protocol":"tcp",
+                    "port":"8443"
+                }
+
+                ]
+            },
+            "inboundNatRulesParam": {
+                "value": [
+                {
+                    "frontendIPConfigurationName": "miniofeip-test",
+                    "name":"natsshPool.0",
+                    "frontendPort": "10022",
+                    "backendPort": "22",
+                    "protocol":"tcp"                
+
+                },
+                {
+                    "frontendIPConfigurationName": "miniofeip-test",
+                    "name":"natsshPool.2",
+                    "frontendPort": "10024",
+                    "backendPort": "22",
+                    "protocol":"tcp"  
+                }
+
+                ]
+            }
+
+        }   
+  }    
