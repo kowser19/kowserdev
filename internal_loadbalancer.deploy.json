@@ -1,0 +1,184 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "loadBalancers_Name": {
+            "type": "string",
+            "defaultValue": "AZlb",
+            "metadata": {
+                "description": "Name of the Internal LB"
+            }
+        },       
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location to deploy the LB"
+            }
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "basic",
+                "Standard"
+            ],
+            "metadata": {
+                "description": "LB SKU by default - Standard"
+            }   
+        },
+       "frontendIPConfigurationsparam" : {
+            "type": "array",
+
+            "defaultValue": [               
+
+            ],
+            "metadata": {
+                "description": " Frontend ip Configuration details"
+            }
+
+        },
+        "backendAddressPoolsParam" : {
+            "type": "array",
+
+            "defaultValue": [               
+
+            ],
+            "metadata": {
+                "description": " Backend pools Configuration details"
+            }
+
+        },
+         "loadBalancingRulesParam": {
+             "type": "array",
+
+            "defaultValue": [               
+            ],
+            "metadata": {
+                "description": " LB Rules"
+            }
+        },
+        "probesParam" :{
+             "type": "array",
+
+            "defaultValue": [               
+            ],
+            "metadata": {
+                "description": " LB Probes"
+            }
+        },
+        "inboundNatRulesParam": {
+           "type": "array",
+
+            "defaultValue": [             
+            ],
+            "metadata": {
+                "description": " LB Inbound NAT Rules"
+            }
+        }
+
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2020-11-01",
+            "name": "[parameters('loadBalancers_Name')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [                
+            ],
+            "sku": {
+                "name": "[parameters('sku')]"
+                
+            },
+            "properties":{                                                                                   
+                "copy" :[
+                    { 
+                        "name": "frontendIPConfigurations",      
+                        "count":"[length(parameters('frontendIPConfigurationsparam'))]",
+                        "input": {
+                            "name": "[parameters('frontendIPConfigurationsparam')[copyIndex('frontendIPConfigurations')].name]",                                                   
+                            "properties":
+                                {
+                                    "privateIPAddress": "[parameters('frontendIPConfigurationsparam')[copyIndex('frontendIPConfigurations')].privateIPAddress]",
+                                    "privateIPAllocationMethod": "Static",
+                                    "subnet": {
+                                        "id": "[parameters('frontendIPConfigurationsparam')[copyIndex('frontendIPConfigurations')].subnetId]"
+                                    },
+                                    "privateIPAddressVersion": "IPv4"
+                                },
+                            "zones": "[parameters('frontendIPConfigurationsparam')[copyIndex('frontendIPConfigurations')].zones]"                       
+                        }                  
+                    },
+                    {                                                                
+                        "name": "backendAddressPools",
+                        "count": "[length(parameters('backendAddressPoolsParam'))]",
+                        "input": {          
+                            "name": "[parameters('backendAddressPoolsParam')[copyIndex('backendAddressPools')].name]",                          
+                            "properties": "[parameters('backendAddressPoolsParam')[copyIndex('backendAddressPools')].properties]"                        
+                        }                                                           
+                    },
+                    {
+                        "name": "loadBalancingRules",
+                        "count": "[length(parameters('loadBalancingRulesParam'))]",
+                        "input": {
+                            "name": "[parameters('loadBalancingRulesParam')[copyIndex('loadBalancingRules')].name]",
+                            "properties": {
+                                "frontendIPConfiguration": {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_Name')), '/frontendIPConfigurations/',parameters('loadBalancingRulesParam')[copyIndex('loadBalancingRules')].frontendIPConfigurationName)]"
+                                },
+                                "frontendPort": "[parameters('loadBalancingRulesParam')[copyIndex('loadBalancingRules')].frontendPort]",
+                                "backendPort": "[parameters('loadBalancingRulesParam')[copyIndex('loadBalancingRules')].backendPort]",
+                                "enableFloatingIP": false,
+                                "idleTimeoutInMinutes": 4,
+                                "protocol": "[parameters('loadBalancingRulesParam')[copyIndex('loadBalancingRules')].protocol]",
+                                "enableTcpReset": false,
+                                "loadDistribution": "SourceIP",
+                                "disableOutboundSnat": true,
+                                "backendAddressPool": {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_Name'), parameters('loadBalancingRulesParam')[copyIndex('loadBalancingRules')].backendAddressPoolName)]"
+                                },
+                                "probe": {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_Name')), '/probes/',parameters('loadBalancingRulesParam')[copyIndex('loadBalancingRules')].propsName)]"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "probes",
+                        "count": "[length(parameters('probesParam'))]",
+                        "input": {
+                            "name": "[parameters('probesParam')[copyIndex('probes')].name]",
+                            "properties": {
+                                "protocol": "[parameters('probesParam')[copyIndex('probes')].protocol]",
+                                "port": "[parameters('probesParam')[copyIndex('probes')].port]",
+                                "intervalInSeconds": 5,
+                                "numberOfProbes": 2
+                            }
+                        }
+                    },
+                    {
+                        "name": "inboundNatRules",
+                        "count": "[length(parameters('inboundNatRulesParam'))]",
+                        "input": {
+                            "name": "[parameters('inboundNatRulesParam')[copyIndex('inboundNatRules')].name]",
+                            "properties": {
+                                "frontendIPConfiguration": {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_Name')), '/frontendIPConfigurations/',parameters('inboundNatRulesParam')[copyIndex('inboundNatRules')].frontendIPConfigurationName)]"
+                                },
+                                "frontendPort": "[parameters('inboundNatRulesParam')[copyIndex('inboundNatRules')].frontendPort]",
+                                "backendPort": "[parameters('inboundNatRulesParam')[copyIndex('inboundNatRules')].backendPort]",
+                                "enableFloatingIP": false,
+                                "idleTimeoutInMinutes": 4,
+                                "protocol": "[parameters('inboundNatRulesParam')[copyIndex('inboundNatRules')].protocol]",
+                                "enableTcpReset": false
+                            }
+                        }
+                    }
+                ],
+                "outboundRules": [],
+                "inboundNatPools": []
+            }
+        }
+    ]   
+        
+}
